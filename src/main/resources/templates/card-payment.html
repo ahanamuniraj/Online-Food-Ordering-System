@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Card Payment</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div class="page-sm">
+  <div class="card mt-3">
+    <div class="card-header">💳 Enter Card Details</div>
+
+    <div class="card-body">
+
+      <form th:action="@{'/orders/' + ${orderId} + '/pay/confirm'}" method="post">
+
+        <!-- 🔥 CSRF FIX (VERY IMPORTANT) -->
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <label>Card Number:</label><br>
+        <input type="text" name="cardNumber" class="input" placeholder="Enter 16-digit card" required><br><br>
+
+        <label>
+            <input type="checkbox" required> I have paid
+        </label><br><br>
+
+        <button type="submit" class="btn btn-success btn-full">
+            Confirm Payment
+        </button>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

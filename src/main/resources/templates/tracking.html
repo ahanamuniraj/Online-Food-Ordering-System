@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Track Order – FoodOrder</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="navbar-brand" th:href="@{/restaurants}">🍽️ <span>FoodOrder</span></a>
+  <div class="nav-links">
+    <a th:href="@{/orders}" class="nav-btn">📦 Orders</a>
+    <form th:action="@{/logout}" method="post" class="d-inline">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <button class="btn btn-outline-danger btn-sm">Logout</button>
+    </form>
+  </div>
+</nav>
+
+<div style="padding:20px; text-align:center;">
+
+  <!-- Flash success message after OTP verification -->
+  <div th:if="${successMessage}" style="
+      background:#dcfce7; border:1px solid #86efac; border-radius:10px;
+      color:#166534; padding:0.75rem 1rem; margin-bottom:1.2rem;
+      font-size:0.95rem; font-weight:500; max-width:500px; margin:0 auto 1.2rem auto;">
+    ✅ <span th:text="${successMessage}"></span>
+  </div>
+
+  <h2>🚚 Live Order Tracking</h2>
+  <p style="color:#64748b; font-size:0.9rem;" th:if="${orderId != null}">
+    Order <strong th:text="'#' + ${orderId}"></strong>
+  </p>
+
+  <div id="mapBox" style="
+        position: relative;
+        width: 100%;
+        height: 350px;
+        border-radius: 16px;
+        overflow: hidden;
+        margin-top: 20px;
+        background: url('https://as1.ftcdn.net/v2/jpg/02/69/53/60/1000_F_269536043_Fz1UIgSMH1jPxmy9K2HD983KcGQHjbGo.jpg');
+        background-size: cover;
+        filter: contrast(1.05);
+  ">
+
+    <!-- ROUTE LINE -->
+    <svg width="100%" height="100%" style="position:absolute;">
+      <path id="route"
+      d="M60 260
+         L150 220
+         L250 240
+         L350 180
+         L450 200
+         L550 240"
+      stroke="#ff6b00"
+      stroke-width="6"
+      fill="none"
+      stroke-linecap="round"
+      stroke-linejoin="round"/>
+    </svg>
+
+    <!-- RESTAURANT -->
+    <div style="
+        position:absolute;
+        left:60px;
+        top:260px;
+        background:#fff;
+        padding:6px 8px;
+        border-radius:50%;
+        box-shadow:0 2px 6px rgba(0,0,0,0.2);
+        font-size:18px;
+    ">🍽️</div>
+
+    <!-- HOME -->
+    <div style="
+        position:absolute;
+        right:60px;
+        top:250px;
+        background:#fff;
+        padding:6px 8px;
+        border-radius:50%;
+        box-shadow:0 2px 6px rgba(0,0,0,0.2);
+        font-size:18px;
+    ">🏠</div>
+
+    <!-- BIKE -->
+    <div id="bike" style="
+        position:absolute;
+        font-size:24px;
+        transform: translate(-50%, -50%);
+    ">
+        🛵
+    </div>
+
+  </div>
+
+  <p id="statusText" style="margin-top:15px; font-weight:500;">
+    Preparing your order...
+  </p>
+
+</div>
+
+<footer>
+  <div>© 2025 <strong>FoodOrder</strong> · Team 11, OOAD Mini Project, Sem 6 'A'</div>
+</footer>
+
+<script>
+    const bike = document.getElementById("bike");
+    const path = document.getElementById("route");
+    const statusText = document.getElementById("statusText");
+
+    const pathLength = path.getTotalLength();
+
+    let duration = 300000; // 5 minutes
+    let startTime = null;
+
+    function animate(time) {
+
+        if (!startTime) startTime = time;
+
+        let progress = (time - startTime) / duration;
+
+        if (progress > 1) progress = 1;
+
+        let point = path.getPointAtLength(progress * pathLength);
+
+        bike.style.left = point.x + "px";
+        bike.style.top = point.y + "px";
+
+        // STATUS UPDATES
+        if (progress < 0.25) {
+            statusText.innerText = "👨‍🍳 Preparing your order...";
+        } else if (progress < 0.6) {
+            statusText.innerText = "🛵 Out for delivery...";
+        } else if (progress < 1) {
+            statusText.innerText = "📦 Almost there...";
+        } else {
+            statusText.innerText = "🎉 Delivered!";
+        }
+
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        }
+    }
+
+    requestAnimationFrame(animate);
+</script>
+</body>
+</html>

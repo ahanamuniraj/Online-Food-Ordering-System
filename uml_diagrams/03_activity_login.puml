@@ -1,0 +1,39 @@
+@startuml Activity - User Registration and Login
+skinparam backgroundColor white
+skinparam ActivityBorderColor #4A90D9
+skinparam ActivityBackgroundColor #EBF4FF
+skinparam ArrowColor #333333
+skinparam ActivityDiamondBorderColor #E8943A
+skinparam ActivityDiamondBackgroundColor #FFF3E0
+
+title Activity Diagram — User Registration & Login (Aarna M)
+
+start
+:User visits /register;
+:Fill name, email, password, phone;
+if (Email already registered?) then (yes)
+  :Show "Email already exists" error;
+  stop
+else (no)
+  :BCrypt encode password;
+  :Save Customer to DB (ROLE_CUSTOMER);
+  :Redirect to /login;
+endif
+
+:User enters email and password;
+:Spring Security authenticates;
+if (Credentials valid?) then (no)
+  :Redirect to /login?error;
+  stop
+else (yes)
+  if (Role == ROLE_ADMIN?) then (yes)
+    :Redirect to /admin/orders;
+  else (no)
+    :Redirect to /restaurants;
+  endif
+endif
+
+:User session established;
+stop
+
+@enduml

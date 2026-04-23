@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin – Dashboard</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; margin-bottom:2rem; }
+    .stat-card  { background:#fff; border-radius:12px; padding:1.25rem 1rem; text-align:center;
+                  box-shadow:0 2px 8px rgba(0,0,0,0.07); border-left:4px solid var(--primary); }
+    .stat-card .stat-value { font-size:2rem; font-weight:700; color:var(--primary); }
+    .stat-card .stat-label { font-size:0.8rem; color:#888; margin-top:0.25rem; }
+    .stat-card.orange { border-color:#f97316; } .stat-card.orange .stat-value{color:#f97316;}
+    .stat-card.green  { border-color:#22c55e; } .stat-card.green  .stat-value{color:#22c55e;}
+    .stat-card.purple { border-color:#a855f7; } .stat-card.purple .stat-value{color:#a855f7;}
+    .stat-card.red    { border-color:#ef4444; } .stat-card.red    .stat-value{color:#ef4444;}
+    .stat-card.teal   { border-color:#14b8a6; } .stat-card.teal   .stat-value{color:#14b8a6;}
+    .quick-links { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin-bottom:2rem; }
+    .quick-link  { display:flex; align-items:center; gap:0.75rem; background:#fff; padding:1rem 1.25rem;
+                   border-radius:10px; text-decoration:none; color:inherit; font-weight:500;
+                   box-shadow:0 2px 6px rgba(0,0,0,0.06); transition:transform .15s, box-shadow .15s; }
+    .quick-link:hover { transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,0.1); }
+    .quick-link .ql-icon { font-size:1.5rem; }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="navbar-brand" href="#">🍽️ <span>Admin Panel</span></a>
+  <div class="nav-links">
+    <a th:href="@{/admin/dashboard}"    class="nav-btn active">📊 Dashboard</a>
+    <a th:href="@{/admin/restaurants}"  class="nav-btn">🏪 Restaurants</a>
+    <a th:href="@{/admin/menu-items}"   class="nav-btn">🍱 Menu Items</a>
+    <a th:href="@{/admin/orders}"       class="nav-btn">📦 Orders</a>
+    <a th:href="@{/admin/drivers}"      class="nav-btn">🚴 Drivers</a>
+    <a th:href="@{/admin/users}"        class="nav-btn">👥 Users</a>
+    <a th:href="@{/admin/coupons}"      class="nav-btn">🎟️ Coupons</a>
+    <a th:href="@{/restaurants}"        class="nav-btn">👁️ View Site</a>
+    <form th:action="@{/logout}" method="post" class="d-inline">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <button class="btn btn-outline-danger btn-sm">Logout</button>
+    </form>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">📊 Admin Dashboard</div>
+      <div class="page-subtitle">Welcome back, Admin! Here's an overview of the system.</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" th:text="${totalUsers}">0</div>
+      <div class="stat-label">👤 Customers</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-value" th:text="${totalOrders}">0</div>
+      <div class="stat-label">📦 Total Orders</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-value" th:text="${pendingOrders}">0</div>
+      <div class="stat-label">⏳ Pending Orders</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-value" th:text="${deliveredOrders}">0</div>
+      <div class="stat-label">✅ Delivered</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-value" th:text="${totalRestaurants}">0</div>
+      <div class="stat-label">🏪 Restaurants</div>
+    </div>
+    <div class="stat-card teal">
+      <div class="stat-value" th:text="${totalCoupons}">0</div>
+      <div class="stat-label">🎟️ Coupons</div>
+    </div>
+  </div>
+
+  <!-- Quick Links -->
+  <h3 style="margin-bottom:0.75rem; color:#374151;">Quick Actions</h3>
+  <div class="quick-links">
+    <a th:href="@{/admin/restaurants}" class="quick-link">
+      <span class="ql-icon">🏪</span> Manage Restaurants
+    </a>
+    <a th:href="@{/admin/menu-items}" class="quick-link">
+      <span class="ql-icon">🍱</span> Manage Menu Items
+    </a>
+    <a th:href="@{/admin/orders}" class="quick-link">
+      <span class="ql-icon">📦</span> View All Orders
+    </a>
+    <a th:href="@{/admin/drivers}" class="quick-link">
+      <span class="ql-icon">🚴</span> Manage Drivers
+    </a>
+    <a th:href="@{/admin/users}" class="quick-link">
+      <span class="ql-icon">👥</span> Manage Users
+    </a>
+    <a th:href="@{/admin/coupons}" class="quick-link">
+      <span class="ql-icon">🎟️</span> Manage Coupons
+    </a>
+  </div>
+
+  <!-- Recent Orders -->
+  <div class="card">
+    <div class="card-header" style="background:var(--primary);color:#fff;">📦 Recent Orders (Last 5)</div>
+    <div class="card-body" style="padding:0;">
+      <table class="table" th:if="${!recentOrders.isEmpty()}">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Customer</th>
+            <th>Status</th>
+            <th>Total</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="order : ${recentOrders}">
+            <td th:text="${order.id}"></td>
+            <td th:text="${order.customerName}"></td>
+            <td>
+              <span class="badge"
+                    th:classappend="${order.status == 'DELIVERED'} ? 'badge-success' :
+                                    (${order.status == 'PENDING'}  ? 'badge-warning' : 'badge-info')"
+                    th:text="${order.status}"></span>
+            </td>
+            <td th:text="'₹' + ${#numbers.formatDecimal(order.total,1,2)}"></td>
+            <td>
+              <a th:href="@{/admin/orders}" class="btn btn-sm btn-ghost">View All</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div th:if="${recentOrders.isEmpty()}" style="padding:1.5rem; text-align:center; color:#888;">
+        No orders yet.
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

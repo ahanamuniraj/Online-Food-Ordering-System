@@ -1,0 +1,32 @@
+@startuml Activity - Restaurant Browsing and Menu Viewing
+skinparam backgroundColor white
+skinparam ActivityBorderColor #4A90D9
+skinparam ActivityBackgroundColor #EBF4FF
+skinparam ArrowColor #333333
+skinparam ActivityDiamondBorderColor #E8943A
+skinparam ActivityDiamondBackgroundColor #FFF3E0
+
+title Activity Diagram — Restaurant Browsing & Menu Viewing (Adarsh L)
+
+start
+:Customer navigates to /restaurants;
+if (Search keyword provided?) then (yes)
+  :Call RestaurantService.searchByName(keyword);
+  :Filter restaurants by name (case-insensitive);
+else (no)
+  :Load all open restaurants;
+endif
+
+:Display restaurant list (name, cuisine, rating);
+:Customer clicks on a restaurant;
+:Load restaurant details from DB;
+:Load Menu and MenuItems for restaurant;
+:Group items by category;
+:Display restaurant detail page;
+:Customer selects a menu item;
+:POST /cart/add?menuItemId=X;
+:Add item to cart;
+:Redirect to /cart;
+stop
+
+@enduml

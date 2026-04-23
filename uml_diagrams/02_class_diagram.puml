@@ -1,0 +1,152 @@
+@startuml Class Diagram
+skinparam backgroundColor white
+skinparam ClassBorderColor #4A90D9
+skinparam ClassBackgroundColor #EBF4FF
+skinparam ClassAttributeIconSize 0
+skinparam ArrowColor #333333
+
+abstract class AppUser {
+    - id: Long
+    - name: String
+    - email: String
+    - password: String
+    - phone: String
+    - role: String
+}
+
+class Customer {
+}
+class Admin {
+}
+class Driver {
+}
+
+AppUser <|-- Customer
+AppUser <|-- Admin
+AppUser <|-- Driver
+
+class Restaurant {
+    - id: Long
+    - name: String
+    - cuisine: String
+    - rating: double
+    - open: boolean
+    - imageUrl: String
+}
+
+class Menu {
+    - id: Long
+}
+
+class MenuItem {
+    - id: Long
+    - name: String
+    - category: String
+    - price: double
+    - available: boolean
+}
+
+class Cart {
+    - id: Long
+    - customerId: Long
+    - discountAmount: Double
+    - appliedCoupon: String
+}
+
+class CartItem {
+    - id: Long
+    - menuItemId: Long
+    - menuItemName: String
+    - price: double
+    - quantity: int
+}
+
+class FoodOrder {
+    - id: Long
+    - customerId: Long
+    - customerName: String
+    - deliveryAddress: String
+    - status: String
+    - subtotal: double
+    - tax: double
+    - discount: double
+    - total: double
+    - placedAt: LocalDateTime
+}
+
+class OrderItem {
+    - id: Long
+    - itemName: String
+    - price: double
+    - quantity: int
+}
+
+class Payment {
+    - id: Long
+    - orderId: Long
+    - paymentMethod: String
+    - status: String
+    - amount: double
+    - paymentTime: LocalDateTime
+}
+
+class Coupon {
+    - id: Long
+    - code: String
+    - discountPercent: double
+    - minOrderAmount: double
+    - expiryDate: LocalDate
+    - active: boolean
+}
+
+class Review {
+    - id: Long
+    - orderId: Long
+    - customerId: Long
+    - customerName: String
+    - rating: int
+    - comment: String
+    - createdAt: LocalDateTime
+}
+
+class Tracking {
+    - id: Long
+    - orderId: Long
+    - status: String
+    - location: String
+    - updatedTime: LocalDateTime
+}
+
+interface PaymentProcessor {
+    + processPayment(orderId, amount): String
+    + getMethodName(): String
+}
+
+class UpiPayment implements PaymentProcessor
+class CardPayment implements PaymentProcessor
+class CodPayment implements PaymentProcessor
+
+class PaymentFactory {
+    + {static} getProcessor(method): PaymentProcessor
+}
+
+class OrderFacade {
+    + placeOrder(customerId, name, address): FoodOrder
+}
+
+class OrderStatusChangedEvent {
+    - orderId: Long
+    - newStatus: String
+}
+
+Restaurant "1" *-- "1" Menu
+Menu "1" *-- "many" MenuItem
+Cart "1" *-- "many" CartItem
+FoodOrder "1" *-- "many" OrderItem
+FoodOrder "1" -- "0..1" Payment
+FoodOrder "1" -- "0..*" Review
+FoodOrder "1" -- "0..*" Tracking
+PaymentFactory ..> PaymentProcessor : creates
+OrderFacade ..> FoodOrder : creates
+
+@enduml

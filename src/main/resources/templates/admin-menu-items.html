@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin – Menu Items</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<nav class="navbar">
+  <a class="navbar-brand" href="#">🍽️ <span>Admin Panel</span></a>
+  <div class="nav-links">
+    <a th:href="@{/admin/dashboard}" class="nav-btn">📊 Dashboard</a>
+    <a th:href="@{/admin/restaurants}" class="nav-btn">🏪 Restaurants</a>
+    <a th:href="@{/admin/menu-items}"  class="nav-btn active">🍱 Menu Items</a>
+    <a th:href="@{/admin/orders}"      class="nav-btn">📦 Orders</a>
+    <a th:href="@{/admin/users}"       class="nav-btn">👥 Users</a>
+    <a th:href="@{/admin/coupons}"     class="nav-btn">🎟️ Coupons</a>
+    <a th:href="@{/restaurants}"       class="nav-btn">👁️ View Site</a>
+    <form th:action="@{/logout}" method="post" class="d-inline">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button class="btn btn-outline-danger btn-sm">Logout</button>
+        </form>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">🍱 Manage Menu Items</div>
+      <div class="page-subtitle">Add dishes, toggle availability, or remove items</div>
+    </div>
+  </div>
+
+  <div th:if="${param.success}" class="alert alert-success">✅ Dish added successfully and is now live on the menu!</div>
+
+  <div class="grid-2">
+    <!-- Add form -->
+    <div class="card">
+      <div class="card-header" style="background:var(--success); color:#fff;">➕ Add New Dish</div>
+      <div class="card-body">
+        <form th:action="@{/admin/menu-items/add}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+          <div class="form-group">
+            <label class="form-label">Restaurant</label>
+            <select name="restaurantId" class="form-control" required>
+              <option value="">-- Select Restaurant --</option>
+              <option th:each="r : ${restaurants}" th:value="${r.id}" th:text="${r.name}"></option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dish Name</label>
+            <input type="text" name="name" class="form-control" placeholder="e.g. Butter Chicken" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select name="category" class="form-control" required>
+              <option value="">-- Select --</option>
+              <option>Starter</option><option>Main Course</option><option>Bread</option>
+              <option>Rice</option><option>Pizza</option><option>Pasta</option>
+              <option>Sides</option><option>Dessert</option><option>Drinks</option><option>Soup</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Price (₹)</label>
+            <input type="number" name="price" class="form-control" placeholder="e.g. 250" step="0.5" min="1" required>
+          </div>
+          <div class="form-group" style="display:flex; align-items:center; gap:0.5rem;">
+            <input type="checkbox" name="available" id="availCheck" checked style="width:18px;height:18px; accent-color:var(--primary);">
+            <label for="availCheck" class="form-label" style="margin:0;">Available for order</label>
+          </div>
+          <button type="submit" class="btn btn-success btn-full">Add Dish</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+      <div class="card-header">
+        All Menu Items
+        <span class="badge badge-muted" style="margin-left:auto;" th:text="${#lists.size(menuItems)} + ' items'"></span>
+      </div>
+      <div class="table-wrap" style="max-height:520px; overflow-y:auto;">
+        <table>
+          <thead>
+            <tr><th>Dish</th><th>Category</th><th>Price</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="item : ${menuItems}">
+              <td class="fw-bold text-sm" th:text="${item.name}"></td>
+              <td><span class="badge badge-muted" th:text="${item.category}"></span></td>
+              <td class="fw-bold" style="color:var(--primary);">₹<span th:text="${item.price}"></span></td>
+              <td>
+                <span class="badge badge-success" th:if="${item.available}">Available</span>
+                <span class="badge badge-warning"  th:unless="${item.available}">Unavailable</span>
+              </td>
+              <td>
+                <div class="d-flex gap-1">
+                  <a th:href="@{/admin/menu-items/edit/{id}(id=${item.id})}" class="btn btn-ghost btn-sm">✏️</a>
+                  <form th:action="@{/admin/menu-items/toggle/{id}(id=${item.id})}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                    <button type="submit" class="btn btn-outline btn-sm"
+                            th:text="${item.available} ? 'Disable' : 'Enable'"></button>
+                  </form>
+                  <form th:action="@{/admin/menu-items/delete/{id}(id=${item.id})}" method="post"
+                        onsubmit="return confirm('Delete this item?')">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                    <button type="submit" class="btn btn-danger btn-sm">✕</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(menuItems)}">
+              <td colspan="5" class="text-center text-muted" style="padding:2rem;">No menu items yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-body" th:if="${!#lists.isEmpty(restaurants)}">
+        <p class="text-muted text-sm mb-1">Quick preview:</p>
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+          <a th:each="r : ${restaurants}"
+             th:href="@{/restaurants/{id}(id=${r.id})}"
+             class="btn btn-ghost btn-sm"
+             th:text="'View ' + ${r.name}"></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<footer>
+  <div>© 2025 <strong>FoodOrder</strong> · Team 11, OOAD Mini Project, Sem 6 'A' · Admin Panel</div>
+</footer>
+</body>
+</html>

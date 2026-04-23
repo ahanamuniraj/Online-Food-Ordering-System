@@ -1,0 +1,31 @@
+@startuml State Diagram - Cart Lifecycle
+skinparam backgroundColor white
+skinparam StateBorderColor #4A90D9
+skinparam StateBackgroundColor #EBF4FF
+skinparam ArrowColor #333333
+
+title State Diagram — Cart Lifecycle
+
+[*] --> EMPTY : Customer logs in\n(cart auto-created)
+
+EMPTY --> HAS_ITEMS : POST /cart/add\n(first item added)
+
+HAS_ITEMS --> HAS_ITEMS : Add more items\nRemove item\n(at least 1 remains)
+
+HAS_ITEMS --> EMPTY : Remove last item
+
+HAS_ITEMS --> COUPON_APPLIED : POST /cart/coupon\n(valid coupon code)
+
+COUPON_APPLIED --> HAS_ITEMS : POST /cart/coupon/remove
+
+COUPON_APPLIED --> ORDER_PLACED : POST /order/place\n(via OrderFacade)
+HAS_ITEMS --> ORDER_PLACED : POST /order/place\n(via OrderFacade)
+
+ORDER_PLACED --> EMPTY : Cart cleared\nby OrderFacade
+
+EMPTY : do / Wait for items
+HAS_ITEMS : do / Show subtotal + 5% tax
+COUPON_APPLIED : do / Show discount applied
+ORDER_PLACED : entry / Convert to FoodOrder\nentry / Clear all CartItems
+
+@enduml

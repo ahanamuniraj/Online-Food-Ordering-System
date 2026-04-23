@@ -1,0 +1,42 @@
+@startuml Activity - Payment Processing and Review Submission
+skinparam backgroundColor white
+skinparam ActivityBorderColor #4A90D9
+skinparam ActivityBackgroundColor #EBF4FF
+skinparam ArrowColor #333333
+skinparam ActivityDiamondBorderColor #E8943A
+skinparam ActivityDiamondBackgroundColor #FFF3E0
+
+title Activity Diagram — Payment & Review (Akshaya Lakshmi)
+
+start
+:Customer views order detail;
+:Customer clicks Pay Now;
+:Display payment options (UPI / Card / COD);
+:Customer selects payment method;
+
+:**PaymentFactory.getProcessor(method)**;
+note right: Factory Pattern
+
+:Execute PaymentProcessor.processPayment();
+if (Payment SUCCESS?) then (yes)
+  :Save Payment (status=SUCCESS);
+  :Update OrderStatus → CONFIRMED;
+  :Add tracking steps (PREPARING, OUT_FOR_DELIVERY, DELIVERED);
+  :Publish OrderStatusChangedEvent;
+  :Show payment success page;
+  :Customer navigates to /orders/{id}/track;
+  :View tracking steps;
+  if (Order DELIVERED?) then (yes)
+    :Customer visits /orders/{id}/review;
+    :Enter rating (1-5) and comment;
+    :Save Review to DB;
+    :Redirect to order detail;
+  endif
+else (no)
+  :Save Payment (status=FAILED);
+  :Show payment failure page;
+  :Customer may retry;
+endif
+stop
+
+@enduml

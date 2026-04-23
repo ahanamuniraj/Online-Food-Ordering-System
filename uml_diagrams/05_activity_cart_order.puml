@@ -1,0 +1,39 @@
+@startuml Activity - Cart Management and Order Placement
+skinparam backgroundColor white
+skinparam ActivityBorderColor #4A90D9
+skinparam ActivityBackgroundColor #EBF4FF
+skinparam ArrowColor #333333
+skinparam ActivityDiamondBorderColor #E8943A
+skinparam ActivityDiamondBackgroundColor #FFF3E0
+
+title Activity Diagram — Cart & Order Placement (Ahana M)
+
+start
+:Customer views cart (/cart);
+:Calculate subtotal, 5% tax, discount, total;
+if (Apply coupon?) then (yes)
+  :Validate: code exists, active, not expired, min order met;
+  if (Valid coupon?) then (yes)
+    :Apply discount to cart;
+    :Show updated total;
+  else (no)
+    :Show error message;
+  endif
+endif
+:Customer clicks Checkout;
+:Display checkout page with address input;
+:Customer submits delivery address;
+note right: POST /order/place
+
+:**OrderFacade.placeOrder()**;
+:Validate cart is not empty;
+:Calculate final totals;
+:Create FoodOrder with status PENDING;
+:Convert CartItems to OrderItems;
+:Save order to DB;
+:Publish OrderStatusChangedEvent;
+:Clear cart;
+:Redirect to order confirmation;
+stop
+
+@enduml

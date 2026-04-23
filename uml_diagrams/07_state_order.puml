@@ -1,0 +1,31 @@
+@startuml State Diagram - Order Lifecycle
+skinparam backgroundColor white
+skinparam StateBorderColor #4A90D9
+skinparam StateBackgroundColor #EBF4FF
+skinparam ArrowColor #333333
+skinparam StateStartColor #333333
+skinparam StateEndColor #333333
+
+title State Diagram — Order Lifecycle
+
+[*] --> PENDING : Customer places order\n(OrderFacade.placeOrder)
+
+PENDING --> CONFIRMED : Payment SUCCESS\n(PaymentService)
+PENDING --> CANCELLED : Admin cancels\nor payment FAILED
+
+CONFIRMED --> PREPARING : Tracking step added
+
+PREPARING --> OUT_FOR_DELIVERY : Tracking step added
+
+OUT_FOR_DELIVERY --> DELIVERED : Tracking step added
+
+DELIVERED --> [*]
+CANCELLED --> [*]
+
+PENDING : Entry / Publish OrderStatusChangedEvent
+CONFIRMED : Entry / Publish OrderStatusChangedEvent
+PREPARING : Entry / Add tracking record
+OUT_FOR_DELIVERY : Entry / Add tracking record
+DELIVERED : Entry / Customer can review
+
+@enduml

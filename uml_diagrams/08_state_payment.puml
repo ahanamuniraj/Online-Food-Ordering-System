@@ -1,0 +1,23 @@
+@startuml State Diagram - Payment Lifecycle
+skinparam backgroundColor white
+skinparam StateBorderColor #4A90D9
+skinparam StateBackgroundColor #EBF4FF
+skinparam ArrowColor #333333
+
+title State Diagram — Payment Lifecycle
+
+[*] --> PAYMENT_PAGE : Customer clicks Pay Now
+
+PAYMENT_PAGE --> PROCESSING : Customer selects method\nand submits
+
+PROCESSING --> SUCCESS : PaymentProcessor returns\n"SUCCESS"
+PROCESSING --> FAILED : PaymentProcessor returns\n"FAILED"
+
+SUCCESS --> [*] : Order confirmed,\ntracking initiated
+FAILED --> PAYMENT_PAGE : Customer retries
+
+PROCESSING : do / PaymentFactory.getProcessor(method)\ndo / processor.processPayment(orderId, amount)
+SUCCESS : entry / Update order status → CONFIRMED\nentry / Add tracking steps
+FAILED : entry / Save payment record (FAILED)
+
+@enduml

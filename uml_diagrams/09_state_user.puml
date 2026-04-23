@@ -1,0 +1,30 @@
+@startuml State Diagram - User Session
+skinparam backgroundColor white
+skinparam StateBorderColor #4A90D9
+skinparam StateBackgroundColor #EBF4FF
+skinparam ArrowColor #333333
+
+title State Diagram — User Session (Spring Security)
+
+[*] --> ANONYMOUS : Application start
+
+ANONYMOUS --> AUTHENTICATED_CUSTOMER : Successful login\n(ROLE_CUSTOMER)
+ANONYMOUS --> AUTHENTICATED_ADMIN : Successful login\n(ROLE_ADMIN)
+ANONYMOUS --> ANONYMOUS : Login failed\n(redirect /login?error)
+ANONYMOUS --> REGISTERED : POST /register\n(account created)
+REGISTERED --> ANONYMOUS : Redirect to /login
+
+AUTHENTICATED_CUSTOMER --> BROWSING : GET /restaurants
+BROWSING --> CART_ACTIVE : Add items to cart
+CART_ACTIVE --> ORDER_PLACED : POST /order/place
+ORDER_PLACED --> BROWSING : Continue shopping
+AUTHENTICATED_CUSTOMER --> ANONYMOUS : POST /logout
+
+AUTHENTICATED_ADMIN --> ADMIN_PANEL : GET /admin/**
+ADMIN_PANEL --> ANONYMOUS : POST /logout
+
+ANONYMOUS : Entry / Show login page
+AUTHENTICATED_CUSTOMER : Spring Security session active\nAll /admin/** routes blocked (403)
+AUTHENTICATED_ADMIN : Spring Security session active\nFull access to /admin/**
+
+@enduml

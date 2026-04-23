@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Driver Dashboard</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    .driver-header { background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+      color: #fff; border-radius: 14px; padding: 1.75rem 2rem; margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: 1.5rem; }
+    .driver-avatar { width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(255,255,255,0.2); display: flex; align-items: center;
+      justify-content: center; font-size: 2rem; flex-shrink: 0; }
+    .driver-info h2 { margin: 0 0 0.25rem; font-size: 1.4rem; }
+    .driver-info p  { margin: 0; opacity: 0.85; font-size: 0.9rem; }
+    .status-badge { display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.3rem 0.9rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; margin-top: 0.5rem; }
+    .status-available   { background: #dcfce7; color: #16a34a; }
+    .status-unavailable { background: #fee2e2; color: #dc2626; }
+    .section-title { font-size: 1.1rem; font-weight: 700; color: #1e3a5f;
+      margin: 1.5rem 0 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    .active-card { background: #fff; border-radius: 14px; padding: 1.5rem;
+      box-shadow: 0 4px 18px rgba(37,99,235,0.12); border-left: 5px solid #2563eb; margin-bottom: 1.5rem; }
+    .active-card h3 { margin: 0 0 0.5rem; color: #1e3a5f; font-size: 1.15rem; }
+    .active-card .order-meta { display: flex; gap: 1.5rem; flex-wrap: wrap; margin: 0.5rem 0 1rem; }
+    .active-card .order-meta span { font-size: 0.88rem; color: #555; }
+    .active-card .order-meta strong { color: #1e3a5f; }
+    .action-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+    .order-card { background: #fff; border-radius: 12px; padding: 1.25rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07); border-top: 3px solid #f97316; }
+    .order-card h4 { margin: 0 0 0.5rem; color: #1e3a5f; }
+    .order-card .meta { font-size: 0.85rem; color: #666; margin-bottom: 0.75rem; }
+    .order-card .meta span { display: block; margin-bottom: 0.2rem; }
+    .loc-form { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+    .loc-form input { flex: 1; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db;
+      border-radius: 8px; font-size: 0.9rem; }
+    .empty-state { text-align: center; padding: 3rem 1rem; color: #9ca3af; }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 0.5rem; }
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem; margin-bottom: 1.5rem; }
+    .mini-stat { background: #fff; border-radius: 12px; padding: 1rem; text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .mini-stat .val { font-size: 1.6rem; font-weight: 700; color: #2563eb; }
+    .mini-stat .lbl { font-size: 0.75rem; color: #888; margin-top: 0.2rem; }
+    .alert { border-radius: 10px; padding: 0.85rem 1.1rem; margin-bottom: 1rem; font-size: 0.9rem; }
+    .alert-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .alert-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <a class="navbar-brand" href="#">🚴 <span>Driver Panel</span></a>
+  <div class="nav-links">
+    <a th:href="@{/driver/dashboard}" class="nav-btn active">📊 Dashboard</a>
+    <form th:action="@{/logout}" method="post" class="d-inline">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <button class="btn btn-outline-danger btn-sm">Logout</button>
+    </form>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- Flash messages -->
+  <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+  <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+
+  <!-- Driver Header Card -->
+  <div class="driver-header">
+    <div class="driver-avatar">🚴</div>
+    <div class="driver-info">
+      <h2 th:text="${driver.name}">Driver Name</h2>
+      <p th:text="${driver.email}">driver@example.com</p>
+      <p>
+        📞 <span th:text="${driver.phone}">-</span> &nbsp;|&nbsp;
+        🪪 <span th:text="${driver.licenseNumber != null ? driver.licenseNumber : 'N/A'}">-</span> &nbsp;|&nbsp;
+        🚗 <span th:text="${driver.vehicleType}">BIKE</span>
+      </p>
+      <span class="status-badge"
+            th:classappend="${driver.available} ? 'status-available' : 'status-unavailable'"
+            th:text="${driver.available} ? '🟢 Available' : '🔴 On Delivery'">status</span>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <div class="mini-stat">
+      <div class="val" th:text="${#numbers.formatDecimal(driver.currentRating, 1, 1)}">5.0</div>
+      <div class="lbl">⭐ Rating</div>
+    </div>
+    <div class="mini-stat">
+      <div class="val" th:text="${availableOrders.size()}">0</div>
+      <div class="lbl">📦 Open Orders</div>
+    </div>
+    <div class="mini-stat">
+      <div class="val" th:text="${driver.currentOrderId != null ? '#' + driver.currentOrderId : '—'}">—</div>
+      <div class="lbl">🔄 Active Order</div>
+    </div>
+  </div>
+
+  <!-- Active Order Section -->
+  <div th:if="${assignedOrder != null}">
+    <div class="section-title">🔄 Active Delivery</div>
+    <div class="active-card">
+      <h3>Order #<span th:text="${assignedOrder.id}"></span></h3>
+      <div class="order-meta">
+        <span>👤 Customer: <strong th:text="${assignedOrder.customerName}"></strong></span>
+        <span>📍 Address: <strong th:text="${assignedOrder.deliveryAddress}"></strong></span>
+        <span>💰 Total: <strong th:text="'₹' + ${#numbers.formatDecimal(assignedOrder.total,1,2)}"></strong></span>
+        <span>📌 Status: <strong th:text="${assignedOrder.status}"></strong></span>
+      </div>
+
+      <!-- Update Location -->
+      <form th:action="@{/driver/update-location}" method="post" class="loc-form">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <input type="text" name="location" placeholder="e.g. Near MG Road, Bengaluru" required/>
+        <button type="submit" class="btn btn-primary btn-sm">📍 Update Location</button>
+      </form>
+
+      <!-- Mark Delivered -->
+      <div style="margin-top: 1rem;">
+        <form th:action="@{/driver/delivered}" method="post"
+              onsubmit="return confirm('Mark this order as delivered?')">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <button type="submit" class="btn btn-success">✅ Mark as Delivered</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Available Orders Section -->
+  <div th:if="${driver.currentOrderId == null}">
+    <div class="section-title">📦 Available Orders to Accept</div>
+
+    <div th:if="${!availableOrders.isEmpty()}" class="orders-grid">
+      <div th:each="order : ${availableOrders}" class="order-card">
+        <h4>Order #<span th:text="${order.id}"></span></h4>
+        <div class="meta">
+          <span>👤 <span th:text="${order.customerName}"></span></span>
+          <span>📍 <span th:text="${order.deliveryAddress}"></span></span>
+          <span>💰 ₹<span th:text="${#numbers.formatDecimal(order.total,1,2)}"></span></span>
+          <span>🕐 <span th:text="${#temporals.format(order.placedAt, 'dd MMM, HH:mm')}"></span></span>
+        </div>
+        <form th:action="@{'/driver/accept/' + ${order.id}}" method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <button type="submit" class="btn btn-primary btn-sm">🚴 Accept Order</button>
+        </form>
+      </div>
+    </div>
+
+    <div th:if="${availableOrders.isEmpty()}" class="empty-state">
+      <div class="icon">🎉</div>
+      <p>No orders available right now. Check back soon!</p>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

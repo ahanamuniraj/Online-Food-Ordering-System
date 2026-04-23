@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checkout – FoodOrder</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<nav class="navbar">
+  <a class="navbar-brand" th:href="@{/restaurants}">🍽️ <span>FoodOrder</span></a>
+  <div class="nav-links">
+    <a th:href="@{/cart}"   class="nav-btn">🛒 Cart</a>
+    <form th:action="@{/logout}" method="post" class="d-inline">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button class="btn btn-outline-danger btn-sm">Logout</button>
+        </form>
+  </div>
+</nav>
+
+<div class="page-md">
+  <div class="page-header">
+    <div>
+      <div class="page-title">📦 Checkout</div>
+      <div class="page-subtitle">Almost there! Confirm your delivery details.</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Left: Order summary -->
+    <div class="card">
+      <div class="card-header">🧾 Order Summary</div>
+      <div th:each="item : ${cart.items}" class="cart-item">
+        <div>
+          <div class="fw-bold text-sm" th:text="${item.menuItemName}"></div>
+          <div class="text-muted text-sm">× <span th:text="${item.quantity}"></span></div>
+        </div>
+        <span class="fw-bold text-sm" style="color:var(--primary);">₹<span th:text="${#numbers.formatDecimal(item.price * item.quantity,1,'COMMA',2,'POINT')}"></span></span>
+      </div>
+      <div class="card-body">
+        <div class="cart-summary">
+          <div class="summary-row"><span>Subtotal</span><span>₹<span th:text="${#numbers.formatDecimal(subtotal,1,'COMMA',2,'POINT')}"></span></span></div>
+          <div class="summary-row"><span>Tax (5%)</span><span>₹<span th:text="${#numbers.formatDecimal(tax,1,'COMMA',2,'POINT')}"></span></span></div>
+          <div class="summary-row" th:if="${discount > 0}">
+            <span style="color:var(--success);">Discount</span>
+            <span style="color:var(--success);">–₹<span th:text="${#numbers.formatDecimal(discount,1,'COMMA',2,'POINT')}"></span></span>
+          </div>
+          <div class="summary-row total">
+            <span>Total</span>
+            <span>₹<span th:text="${#numbers.formatDecimal(total,1,'COMMA',2,'POINT')}"></span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: delivery form -->
+    <div class="card">
+      <div class="card-header">🏠 Delivery Details</div>
+      <div class="card-body">
+        <form th:action="@{/order/place}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+          <div class="form-group">
+            <label class="form-label">Delivery Address</label>
+            <textarea name="deliveryAddress" class="form-control" rows="4"
+                      placeholder="Enter your full delivery address…" required></textarea>
+          </div>
+          <div th:if="${error}" class="alert alert-error">⚠️ <span th:text="${error}"></span></div>
+          <button type="submit" class="btn btn-primary btn-full mt-2" style="font-size:0.95rem;">
+            🛍️ Place Order
+          </button>
+        </form>
+        <a th:href="@{/cart}" class="btn btn-ghost btn-full mt-1">← Back to Cart</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div>© 2025 <strong>FoodOrder</strong> · Team 11, OOAD Mini Project, Sem 6 'A'</div>
+</footer>
+</body>
+</html>
